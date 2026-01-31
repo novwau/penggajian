@@ -1,0 +1,17 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Attendance extends Model
+{
+    protected $fillable = [
+        'user_id','tanggal','status','bukti_foto','verified_at'
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+}
