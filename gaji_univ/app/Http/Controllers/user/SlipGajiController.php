@@ -17,13 +17,15 @@ class SlipGajiController extends Controller
     }
 
     public function show(Payroll $payroll)
-    {
-        if (
+{
+    if (
         auth()->id() !== $payroll->user_id &&
-        ! auth()->user()->hasRole('admin')
+        auth()->user()->role !== 'admin'
     ) {
         abort(403);
     }
-        return $payroll->load('details','period');
-    }
+
+    return $payroll->load('details','period');
+}
+
 }

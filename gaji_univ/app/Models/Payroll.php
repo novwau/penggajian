@@ -23,4 +23,10 @@ class Payroll extends Model
     {
         return $this->belongsTo(PayrollPeriod::class, 'payroll_period_id');
     }
+
+    public function details()
+{
+    return $this->hasMany(PayrollDetail::class, 'payroll_id'); 
+}
+
 }
