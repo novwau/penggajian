@@ -1,11 +1,11 @@
 <?php
 
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\user\AttendanceController;
-use App\Http\Controllers\admin\AttendanceVerificationController;
-use App\Http\Controllers\admin\PayrollController;
-use App\Http\Controllers\user\SlipGajiController;
-use App\Models\Payroll;
+use App\Http\Controllers\User\AttendanceController;
+use App\Http\Controllers\Admin\AttendanceVerificationController;
+use App\Http\Controllers\Admin\PayrollController;
+use App\Http\Controllers\User\SlipGajiController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('login');
 });
 
 /*
@@ -32,23 +32,31 @@ require __DIR__.'/auth.php';
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     
     // Dashboard - Redirect admin ke admin dashboard
     Route::get('/dashboard', function () {
-        // Jika admin, redirect ke admin dashboard
         if (auth()->user()->role === 'admin') {
             return redirect()->route('admin.dashboard');
         }
         
-        return view('dashboard');
+        // Load data untuk dashboard user
+        $user = auth()->user();
+        $employee = $user->employee;
+        $todayAttendance = \App\Models\Attendance::where('user_id', $user->id)
+            ->whereDate('tanggal', today())
+            ->first();
+        $latestPayroll = \App\Models\Payroll::where('user_id', $user->id)
+            ->with('period')
+            ->latest()
+            ->first();
+        
+        return view('dashboard', compact('user', 'employee', 'todayAttendance', 'latestPayroll'));
     })->name('dashboard');
 
     // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    Route::patch('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
 
     // Attendance (Presensi)
     Route::prefix('attendance')->name('attendance.')->group(function () {
@@ -79,10 +87,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 |--------------------------------------------------------------------------
 */
 
-// Admin routes dengan RoleMiddleware
-// Kalau sudah daftarkan alias di bootstrap/app.php, pakai: 'role:admin'
-// Kalau belum, pakai: RoleMiddleware::class.':admin'
-Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     
     // Admin Dashboard
     Route::get('/dashboard', function () {

@@ -3,52 +3,50 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Auth\LoginRequest;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\View\View;
+use Illuminate\Validation\ValidationException;
 
 class AuthenticatedSessionController extends Controller
 {
-    /**
-     * Display the login view.
-     */
-    public function create(): View
+    public function create()
     {
-        return view('auth.login');
+        return view('login');
     }
 
-    /**
-     * Handle an incoming authentication request.
-     */
-    public function store(LoginRequest $request): RedirectResponse
+    public function store(Request $request)
     {
-        $request->authenticate();
+        try {
+            $validated = $request->validate([
+                'email' => 'required|email',
+                'password' => 'required',
+            ]);
 
-        $request->session()->regenerate();
+            if (!Auth::attempt($validated, $request->boolean('remember'))) {
+                throw ValidationException::withMessages([
+                    'email' => 'Email atau password salah.',
+                ]);
+            }
 
-        // Redirect berdasarkan role
-        $user = Auth::user();
-        
-        if ($user->role === 'admin') {
-            return redirect()->intended('/admin/dashboard');
+            $request->session()->regenerate();
+
+            if (Auth::user()->role === 'admin') {
+                return redirect()->intended('/admin/dashboard');
+            }
+
+            return redirect()->intended('/dashboard');
+            
+        } catch (ValidationException $e) {
+            return back()->withErrors($e->errors());
         }
-
-        return redirect()->intended('/dashboard');
     }
 
-    /**
-     * Destroy an authenticated session.
-     */
-    public function destroy(Request $request): RedirectResponse
+    public function destroy(Request $request)
     {
         Auth::guard('web')->logout();
-
         $request->session()->invalidate();
-
         $request->session()->regenerateToken();
-
+        
         return redirect('/');
     }
 }
