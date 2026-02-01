@@ -6,6 +6,9 @@ use App\Http\Controllers\User\AttendanceController;
 use App\Http\Controllers\Admin\AttendanceVerificationController;
 use App\Http\Controllers\Admin\PayrollController;
 use App\Http\Controllers\User\SlipGajiController;
+use App\Http\Controllers\Admin\EmployeeController;
+use App\Http\Controllers\Admin\AuditLogController;
+use App\Http\Controllers\Admin\DashboardController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -51,7 +54,7 @@ Route::middleware(['auth'])->group(function () {
             ->latest()
             ->first();
         
-        return view('dashboard', compact('user', 'employee', 'todayAttendance', 'latestPayroll'));
+        return view('user/dashboard', compact('user', 'employee', 'todayAttendance', 'latestPayroll'));
     })->name('dashboard');
 
     // Profile
@@ -90,9 +93,20 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     
     // Admin Dashboard
-    Route::get('/dashboard', function () {
-        return view('admin.dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->name('dashboard');
+
+
+     Route::prefix('employees')->name('employees.')->group(function () {
+        Route::get('/', [EmployeeController::class, 'index'])->name('index');
+        Route::get('/create', [EmployeeController::class, 'create'])->name('create');
+        Route::post('/', [EmployeeController::class, 'store'])->name('store');
+        Route::get('/{user}', [EmployeeController::class, 'show'])->name('show');
+        Route::get('/{user}/edit', [EmployeeController::class, 'edit'])->name('edit');
+        Route::patch('/{user}', [EmployeeController::class, 'update'])->name('update');
+        Route::delete('/{user}', [EmployeeController::class, 'destroy'])->name('destroy');
+        Route::patch('/{user}/reset-password', [EmployeeController::class, 'resetPassword'])->name('reset-password');
+    });
 
     // Kelola Pegawai (Users/Employees)
     Route::prefix('users')->name('users.')->group(function () {
@@ -129,10 +143,17 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     // Verifikasi Presensi
     Route::prefix('attendance')->name('attendance.')->group(function () {
         Route::get('/', function () {
-            $attendances = \App\Models\Attendance::with('user')
-                ->whereNull('verified_at')
-                ->orderBy('tanggal', 'desc')
-                ->paginate(20);
+        $query = \App\Models\Attendance::with('user.employee')  // ← Tambah .employee
+            ->whereNull('verified_at')
+            ->orderBy('tanggal', 'desc')
+            ->orderBy('created_at', 'desc');
+
+        // Filter by status
+        if (request('status') && request('status') != 'all') {
+            $query->where('status', request('status'));
+        }
+
+        $attendances = $query->paginate(20);
             return view('admin.attendance.index', compact('attendances'));
         })->name('index');
         
@@ -149,55 +170,31 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
 
     // Payroll Management
     Route::prefix('payroll')->name('payroll.')->group(function () {
-        
-        // Periode Gaji
-        Route::get('/periods', function () {
-            $periods = \App\Models\PayrollPeriod::orderBy('start_date', 'desc')->paginate(20);
-            return view('admin.payroll.periods', compact('periods'));
-        })->name('periods');
-        
-        Route::get('/periods/create', function () {
-            return view('admin.payroll.periods-create');
-        })->name('periods.create');
-        
-        Route::post('/periods', function () {
-            // Store period logic
-        })->name('periods.store');
-        
-        // Generate Gaji
-        Route::get('/', function () {
-            $periods = \App\Models\PayrollPeriod::where('status', 'active')->get();
-            $users = \App\Models\User::with('employee')->get();
-            return view('admin.payroll.index', compact('periods', 'users'));
-        })->name('index');
-        
-        Route::post('/generate/{user}/{period}', [PayrollController::class, 'generate'])->name('generate');
-        
-        Route::post('/generate-bulk/{period}', function (\App\Models\PayrollPeriod $period) {
-            // Bulk generate logic
-        })->name('generate.bulk');
-        
-        // Laporan Gaji
-        Route::get('/reports', function () {
-            $payrolls = \App\Models\Payroll::with(['user', 'period'])
-                ->orderBy('created_at', 'desc')
-                ->paginate(20);
-            return view('admin.payroll.reports', compact('payrolls'));
-        })->name('reports');
-        
-        Route::get('/reports/{period}', function (\App\Models\PayrollPeriod $period) {
-            $payrolls = \App\Models\Payroll::with(['user', 'details'])
-                ->where('payroll_period_id', $period->id)
-                ->get();
-            return view('admin.payroll.report-detail', compact('period', 'payrolls'));
-        })->name('reports.detail');
+
+        // Periode
+        Route::get('/periods', [PayrollController::class, 'periods'])->name('periods');
+        Route::get('/periods/create', [PayrollController::class, 'createPeriod'])->name('periods.create');
+        Route::post('/periods', [PayrollController::class, 'storePeriod'])->name('periods.store');
+
+        // Generate Gaji (INI YANG SEBELUMNYA KOSONG)
+        Route::get('/', [PayrollController::class, 'index'])->name('index');
+
+        Route::post(
+            '/generate/{user}/{period}',
+            [PayrollController::class, 'generate']
+        )->name('generate.single');
+
+        Route::post(
+            '/generate-bulk/{period}',
+            [PayrollController::class, 'generateBulk']
+        )->name('generate.bulk');
+
+        // Reports
+        Route::get('/reports', [PayrollController::class, 'reports'])->name('reports');
+        Route::get('/reports/{period}', [PayrollController::class, 'reportDetail'])->name('reports.detail');
     });
 
     // Audit Logs
-    Route::get('/audit-logs', function () {
-        $logs = \App\Models\AuditLog::with('user')
-            ->orderBy('created_at', 'desc')
-            ->paginate(50);
-        return view('admin.audit-logs', compact('logs'));
-    })->name('audit-logs');
+    Route::get('/audit-logs', [AuditLogController::class, 'index'])
+    ->name('audit-logs');
 });

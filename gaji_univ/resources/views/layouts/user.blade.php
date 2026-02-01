@@ -425,7 +425,7 @@
         <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <h2 class="sidebar-title heading-font">UNTAG Surabaya</h2>
+                <h2 class="sidebar-title heading-font">UNMER Krian</h2>
                 <p class="sidebar-subtitle">Portal Kepegawaian</p>
             </div>
 

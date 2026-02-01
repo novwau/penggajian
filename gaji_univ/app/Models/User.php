@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Models\Employee;
+use App\Models\Payroll;
 
 class User extends Authenticatable
 {
@@ -54,4 +55,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(Lecturer::class);
     }
+
+    public function payrolls()
+{
+    return $this->hasMany(Payroll::class);
+}
 }

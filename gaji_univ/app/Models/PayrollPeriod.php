@@ -13,6 +13,13 @@ class PayrollPeriod extends Model
         'status',
     ];
 
+    // App\Models\PayrollPeriod.php
+protected $casts = [
+    'start_date' => 'date',
+    'end_date'   => 'date',
+];
+
+
     public function payrolls()
     {
         return $this->hasMany(Payroll::class);
