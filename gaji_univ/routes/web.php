@@ -34,9 +34,14 @@ require __DIR__.'/auth.php';
 
 Route::middleware(['auth', 'verified'])->group(function () {
     
-    // Dashboard
+    // Dashboard - Redirect admin ke admin dashboard
     Route::get('/dashboard', function () {
-        return view('user.dashboard');
+        // Jika admin, redirect ke admin dashboard
+        if (auth()->user()->role === 'admin') {
+            return redirect()->route('admin.dashboard');
+        }
+        
+        return view('dashboard');
     })->name('dashboard');
 
     // Profile
@@ -74,6 +79,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 |--------------------------------------------------------------------------
 */
 
+// Admin routes dengan RoleMiddleware
+// Kalau sudah daftarkan alias di bootstrap/app.php, pakai: 'role:admin'
+// Kalau belum, pakai: RoleMiddleware::class.':admin'
 Route::middleware(['auth', 'verified', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     
     // Admin Dashboard
