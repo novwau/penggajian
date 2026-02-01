@@ -1,0 +1,16 @@
+🔐 ADMINISTRATOR
+Email	Password	Role	Nama
+admin@untag.ac.id	Admin123!	Admin	Administrator Sistem
+🎓 DOSEN (5 Orang)
+Email	Password	Role	Nama	NIP	Jabatan
+ahmad.santoso@untag.ac.id	Dosen123!	Dosen	Dr. Prof. Ahmad Santoso, M.Kom.	197803152001121001	Dosen Tetap Teknik Informatika
+siti.rahayu@untag.ac.id	Dosen123!	Dosen	Dra. Siti Rahayu, M.Si.	198211202002022002	Dosen Tetap Matematika
+budi.wijaya@untag.ac.id	Dosen123!	Dosen	Prof. Dr. Budi Wijaya, S.T., M.T.	196510151990031003	Guru Besar Teknik Sipil
+joko.prasetyo@untag.ac.id	Dosen123!	Dosen	Drs. Joko Prasetyo, M.Hum.	197512101997031004	Dosen Tetap Sastra Inggris
+linda.sari@untag.ac.id	Dosen123!	Dosen	Linda Sari, S.E., M.Ak.	198903252010122005	Dosen Tetap Akuntansi
+👨‍💼 KARYAWAN (4 Orang)
+Email	Password	Role	Nama	NIP	Jabatan
+bambang.sutrisno@untag.ac.id	Karyawan123!	Karyawan	Bambang Sutrisno	199001012011011006	Staff Administrasi
+sri.mulyani@untag.ac.id	Karyawan123!	Karyawan	Sri Mulyani	199105152012022007	Staff Keuangan
+agus.salim@untag.ac.id	Karyawan123!	Karyawan	Agus Salim	199208202013031008	Staff Perpustakaan
+dewi.anggraini@untag.ac.id	Karyawan123!	Karyawan	Dewi Anggraini	199312252014042009	Staff IT Support
