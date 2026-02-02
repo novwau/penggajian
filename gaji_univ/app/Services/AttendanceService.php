@@ -7,7 +7,7 @@ use App\Models\User;
 use Exception;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Carbon;
 
 class AttendanceService
 {
@@ -16,7 +16,7 @@ class AttendanceService
     ) {}
 
     /**
-     * User melakukan presensi
+     * User melakukan presensi (1x per hari)
      */
     public function checkIn(
         User $user,
@@ -25,15 +25,16 @@ class AttendanceService
     ): Attendance {
         return DB::transaction(function () use ($user, $status, $photo) {
 
-            // Cegah presensi ganda di tanggal yang sama
-            $today = now()->toDateString();
+            $today = Carbon::today();
 
-            if (
-                Attendance::where('user_id', $user->id)
-                    ->where('tanggal', $today)
-                    ->exists()
-            ) {
-                throw new Exception('Presensi hari ini sudah ada');
+            // Kunci presensi satu kali per hari
+            $alreadyCheckedIn = Attendance::where('user_id', $user->id)
+                ->whereDate('tanggal', $today)
+                ->lockForUpdate()
+                ->exists();
+
+            if ($alreadyCheckedIn) {
+                throw new Exception('ANDA_SUDAH_CHECKIN_HARI_INI');
             }
 
             // Simpan foto jika ada
@@ -43,13 +44,13 @@ class AttendanceService
             }
 
             $attendance = Attendance::create([
-                'user_id' => $user->id,
-                'tanggal' => $today,
-                'status' => $status,
-                'bukti_foto' => $path,
+                'user_id'     => $user->id,
+                'tanggal'     => $today,
+                'status'      => $status,
+                'bukti_foto'  => $path,
             ]);
 
-            // Audit
+            // Audit log
             $this->audit->log(
                 'check-in',
                 $attendance,
@@ -67,7 +68,7 @@ class AttendanceService
     public function verify(Attendance $attendance): Attendance
     {
         if ($attendance->verified_at) {
-            throw new Exception('Presensi sudah diverifikasi');
+            throw new Exception('PRESENSI_SUDAH_DIVERIFIKASI');
         }
 
         $old = $attendance->toArray();

@@ -13,18 +13,33 @@ class AttendanceController extends Controller
     ) {}
 
     public function checkIn(Request $request)
-    {
-        $validated = $request->validate([
-            'status' => 'required|in:hadir,sakit,izin',
-            'photo' => 'nullable|image|max:2048',
-        ]);
+{
+    $validated = $request->validate([
+        'status' => 'required|in:hadir,sakit,izin',
+        'photo'  => 'nullable|image|max:2048',
+    ]);
 
-        $attendance = $this->attendance->checkIn(
+    try {
+        $this->attendance->checkIn(
             auth()->user(),
             $validated['status'],
             $request->file('photo')
         );
 
-        return response()->json($attendance);
+        return redirect()
+            ->route('attendance.index')
+            ->with('success', 'Presensi hari ini berhasil dicatat.');
+
+    } catch (\Exception $e) {
+
+        if ($e->getMessage() === 'ANDA_SUDAH_CHECKIN_HARI_INI') {
+            return redirect()
+                ->route('attendance.index')
+                ->with('error', 'Anda sudah melakukan presensi hari ini.');
+        }
+
+        throw $e;
     }
+}
+
 }

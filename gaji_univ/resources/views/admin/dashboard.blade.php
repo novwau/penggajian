@@ -120,7 +120,7 @@
         </div>
 
         <div style="display:flex;flex-direction:column;gap:.75rem;">
-            <a href="{{ route('admin.users.create') }}" class="btn btn-primary">Tambah Pegawai</a>
+            <a href="{{ route('admin.employees.create') }}" class="btn btn-primary">Tambah Pegawai</a>
             <a href="{{ route('admin.attendance.index') }}" class="btn btn-secondary">Verifikasi Presensi</a>
             <a href="{{ route('admin.payroll.index') }}" class="btn btn-outline">Generate Gaji</a>
             <a href="{{ route('admin.payroll.reports') }}" class="btn btn-outline">Laporan Gaji</a>

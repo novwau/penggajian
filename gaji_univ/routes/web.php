@@ -1,15 +1,16 @@
 <?php
 
-use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use Illuminate\Support\Facades\Route;
+
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\User\AttendanceController;
+use App\Http\Controllers\User\AttendanceController as UserAttendanceController;
+use App\Http\Controllers\User\SlipGajiController;
+
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\AttendanceVerificationController;
 use App\Http\Controllers\Admin\PayrollController;
-use App\Http\Controllers\User\SlipGajiController;
-use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\AuditLogController;
-use App\Http\Controllers\Admin\DashboardController;
-use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,7 +19,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('login');
+    return view('auth.login');
 });
 
 /*
@@ -31,56 +32,95 @@ require __DIR__.'/auth.php';
 
 /*
 |--------------------------------------------------------------------------
-| User/Employee Routes (Dosen & Karyawan)
+| Authenticated User Routes (Dosen & Karyawan)
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth'])->group(function () {
-    
-    // Dashboard - Redirect admin ke admin dashboard
+Route::middleware('auth')->group(function () {
+
+    /*
+    | Dashboard
+    */
     Route::get('/dashboard', function () {
-        if (auth()->user()->role === 'admin') {
+        $user = auth()->user();
+
+        if ($user->role === 'admin') {
             return redirect()->route('admin.dashboard');
         }
-        
-        // Load data untuk dashboard user
-        $user = auth()->user();
+
         $employee = $user->employee;
+
         $todayAttendance = \App\Models\Attendance::where('user_id', $user->id)
-            ->whereDate('tanggal', today())
+            ->whereDate('tanggal', now()->toDateString())
             ->first();
+
         $latestPayroll = \App\Models\Payroll::where('user_id', $user->id)
             ->with('period')
             ->latest()
             ->first();
-        
-        return view('user/dashboard', compact('user', 'employee', 'todayAttendance', 'latestPayroll'));
+
+        return view('user.dashboard', compact(
+            'user',
+            'employee',
+            'todayAttendance',
+            'latestPayroll'
+        ));
     })->name('dashboard');
 
-    // Profile
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    /*
+    | Profile
+    */
+    Route::get('/profile', [ProfileController::class, 'edit'])
+        ->name('user.profile.edit');
 
-    // Attendance (Presensi)
+    Route::patch('/profile', [ProfileController::class, 'update'])
+        ->name('profile.update');
+
+    /*
+    | Attendance (Presensi User)
+    */
     Route::prefix('attendance')->name('attendance.')->group(function () {
+
         Route::get('/', function () {
-            return view('attendance.index');
+            return view('user.attendance.index');
         })->name('index');
-        
-        Route::post('/check-in', [AttendanceController::class, 'checkIn'])->name('checkin');
-        
+
+        Route::post('/check-in', [UserAttendanceController::class, 'checkIn'])
+            ->name('checkin');
+
         Route::get('/history', function () {
             $attendances = \App\Models\Attendance::where('user_id', auth()->id())
                 ->orderBy('tanggal', 'desc')
                 ->paginate(20);
-            return view('attendance.history', compact('attendances'));
+
+            return view('user.attendance.history', compact('attendances'));
         })->name('history');
     });
 
-    // Slip Gaji (Payroll)
+    /*
+    | Payroll (Slip Gaji User)
+    */
     Route::prefix('payroll')->name('payroll.')->group(function () {
-        Route::get('/', [SlipGajiController::class, 'index'])->name('index');
-        Route::get('/{payroll}', [SlipGajiController::class, 'show'])->name('show');
+
+        Route::get('/', function () {
+            $payrolls = \App\Models\Payroll::where('user_id', auth()->id())
+                ->with('period')
+                ->orderByDesc('created_at')
+                ->paginate(12);
+
+            return view('user.payroll.index', compact('payrolls'));
+        })->name('index');
+
+        Route::get('/{payroll}', function (\App\Models\Payroll $payroll) {
+            abort_unless(
+                auth()->id() === $payroll->user_id || auth()->user()->role === 'admin',
+                403
+            );
+
+            $payroll->load('details', 'period');
+
+            return view('user.payroll.show', compact('payroll'));
+        })->name('show');
     });
 });
 
@@ -90,14 +130,21 @@ Route::middleware(['auth'])->group(function () {
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
-    
-    // Admin Dashboard
+Route::middleware(['auth', 'role:admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+
+    /*
+    | Admin Dashboard
+    */
     Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->name('dashboard');
+        ->name('dashboard');
 
-
-     Route::prefix('employees')->name('employees.')->group(function () {
+    /*
+    | Employees
+    */
+    Route::prefix('employees')->name('employees.')->group(function () {
         Route::get('/', [EmployeeController::class, 'index'])->name('index');
         Route::get('/create', [EmployeeController::class, 'create'])->name('create');
         Route::post('/', [EmployeeController::class, 'store'])->name('store');
@@ -105,96 +152,76 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
         Route::get('/{user}/edit', [EmployeeController::class, 'edit'])->name('edit');
         Route::patch('/{user}', [EmployeeController::class, 'update'])->name('update');
         Route::delete('/{user}', [EmployeeController::class, 'destroy'])->name('destroy');
-        Route::patch('/{user}/reset-password', [EmployeeController::class, 'resetPassword'])->name('reset-password');
+        Route::patch('/{user}/reset-password', [EmployeeController::class, 'resetPassword'])
+            ->name('reset-password');
     });
 
-    // Kelola Pegawai (Users/Employees)
-    Route::prefix('users')->name('users.')->group(function () {
-        Route::get('/', function () {
-            $users = \App\Models\User::with('employee')->paginate(20);
-            return view('admin.users.index', compact('users'));
-        })->name('index');
-        
-        Route::get('/create', function () {
-            return view('admin.users.create');
-        })->name('create');
-        
-        Route::post('/', function () {
-            // Store logic here
-        })->name('store');
-        
-        Route::get('/{user}', function (\App\Models\User $user) {
-            return view('admin.users.show', compact('user'));
-        })->name('show');
-        
-        Route::get('/{user}/edit', function (\App\Models\User $user) {
-            return view('admin.users.edit', compact('user'));
-        })->name('edit');
-        
-        Route::patch('/{user}', function (\App\Models\User $user) {
-            // Update logic here
-        })->name('update');
-        
-        Route::delete('/{user}', function (\App\Models\User $user) {
-            // Delete logic here
-        })->name('destroy');
-    });
-
-    // Verifikasi Presensi
+    /*
+    | Attendance Verification
+    */
     Route::prefix('attendance')->name('attendance.')->group(function () {
+
         Route::get('/', function () {
-        $query = \App\Models\Attendance::with('user.employee')  // ← Tambah .employee
-            ->whereNull('verified_at')
-            ->orderBy('tanggal', 'desc')
-            ->orderBy('created_at', 'desc');
+            $query = \App\Models\Attendance::with('user.employee')
+                ->whereNull('verified_at')
+                ->orderByDesc('tanggal')
+                ->orderByDesc('created_at');
 
-        // Filter by status
-        if (request('status') && request('status') != 'all') {
-            $query->where('status', request('status'));
-        }
+            if (request('status') && request('status') !== 'all') {
+                $query->where('status', request('status'));
+            }
 
-        $attendances = $query->paginate(20);
+            $attendances = $query->paginate(20);
+
             return view('admin.attendance.index', compact('attendances'));
         })->name('index');
-        
-        Route::post('/{attendance}/verify', [AttendanceVerificationController::class, 'verify'])->name('verify');
-        
+
+        Route::post('/{attendance}/verify',
+            [AttendanceVerificationController::class, 'verify']
+        )->name('verify');
+
         Route::get('/verified', function () {
-            $attendances = \App\Models\Attendance::with('user')
+            $attendances = \App\Models\Attendance::with('user.employee')
                 ->whereNotNull('verified_at')
-                ->orderBy('verified_at', 'desc')
+                ->orderByDesc('verified_at')
                 ->paginate(20);
+
             return view('admin.attendance.verified', compact('attendances'));
         })->name('verified');
     });
 
-    // Payroll Management
+    /*
+    | Payroll Management
+    */
     Route::prefix('payroll')->name('payroll.')->group(function () {
 
-        // Periode
+        // Periods
         Route::get('/periods', [PayrollController::class, 'periods'])->name('periods');
         Route::get('/periods/create', [PayrollController::class, 'createPeriod'])->name('periods.create');
         Route::post('/periods', [PayrollController::class, 'storePeriod'])->name('periods.store');
 
-        // Generate Gaji (INI YANG SEBELUMNYA KOSONG)
+        // Payroll list
         Route::get('/', [PayrollController::class, 'index'])->name('index');
 
-        Route::post(
-            '/generate/{user}/{period}',
+        // Generate
+        Route::post('/generate/{user}/{period}',
             [PayrollController::class, 'generate']
         )->name('generate.single');
 
-        Route::post(
-            '/generate-bulk/{period}',
+        Route::post('/generate-bulk/{period}',
             [PayrollController::class, 'generateBulk']
         )->name('generate.bulk');
 
         // Reports
         Route::get('/reports', [PayrollController::class, 'reports'])->name('reports');
-        Route::get('/reports/{period}', [PayrollController::class, 'reportDetail'])->name('reports.detail');
+        Route::get('/reports/{period}',
+            [PayrollController::class, 'reportDetail']
+        )->name('reports.detail');
     });
 
-    // Audit Logs
+    /*
+    | Audit Logs
+    */
     Route::get('/audit-logs', [AuditLogController::class, 'index'])
-    ->name('audit-logs');
+        ->name('audit-logs');
 });

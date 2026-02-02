@@ -198,7 +198,7 @@ class EmployeeController extends Controller
      */
     public function resetPassword(User $user)
     {
-        $newPassword = 'untag' . substr($user->employee->nip, -4);
+        $newPassword = 'unmer' . substr($user->employee->nip, -4);
         
         $user->update([
             'password' => Hash::make($newPassword),
