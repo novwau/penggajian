@@ -3,13 +3,13 @@
 @section('content')
 <div class="card">
     <div class="card-header">
-        <h3 class="card-title">Slip Gaji {{ $payroll->period->name }}</h3>
+        <h3 class="card-title">Slip Gaji {{ $payroll->period->nama }}</h3>
     </div>
 
     <table>
         <tr>
             <td>Total Gaji</td>
-            <td>: Rp {{ number_format($payroll->total) }}</td>
+            <td>: Rp {{ number_format($payroll->total_income) }}</td>
         </tr>
     </table>
 

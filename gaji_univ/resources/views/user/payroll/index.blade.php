@@ -17,7 +17,7 @@
         <tbody>
         @forelse ($payrolls as $payroll)
             <tr>
-                <td>{{ $payroll->period->name }}</td>
+                <td>{{ $payroll->period->nama }}</td>
                 <td>{{ $payroll->created_at->format('d M Y') }}</td>
                 <td>
                     <a class="btn btn-outline" href="{{ route('payroll.show', $payroll) }}">

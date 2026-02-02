@@ -12,7 +12,7 @@
     <div class="stat-card">
         <div class="stat-label">Slip Gaji Terakhir</div>
         <div class="stat-value">
-            {{ $latestPayroll?->period?->name ?? '-' }}
+            {{ $latestPayroll?->period?->nama ?? '-' }}
         </div>
     </div>
 </div>
