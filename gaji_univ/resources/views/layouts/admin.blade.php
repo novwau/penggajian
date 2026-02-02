@@ -356,7 +356,7 @@
             <!-- Sidebar -->
             <aside class="sidebar" id="sidebar">
                 <div class="sidebar-header">
-                    <h2 class="sidebar-title heading-font">UNMER Krian</h2>
+                    <h2 class="sidebar-title heading-font">UNTUBEDES Krian</h2>
                     <p class="sidebar-subtitle">Admin Panel</p>
                 </div>
 
@@ -404,11 +404,23 @@
                             </svg>
                             Generate Gaji
                         </a>
+                        <a href="{{ route('admin.payroll.components.index') }}" class="nav-link {{ request()->routeIs('admin.payroll.components.index') ? 'active' : '' }}">
+                            <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                            </svg>
+                            Komponen Gaji
+                        </a>
                         <a href="{{ route('admin.payroll.reports') }}" class="nav-link {{ request()->routeIs('admin.payroll.reports') ? 'active' : '' }}">
                             <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                             </svg>
                             Laporan Gaji
+                        </a>
+                        <a href="{{ route('admin.payroll.user-components.index') }}" class="nav-link {{ request()->routeIs('admin.payroll.user-component.index') ? 'active' : '' }}">
+                            <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            Atur Gaji
                         </a>
                     </div>
 

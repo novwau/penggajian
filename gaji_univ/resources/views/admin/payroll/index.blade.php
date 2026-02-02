@@ -35,9 +35,9 @@
                     @if($selectedPeriod)
                         <div class="col-md-8 text-end">
                             <div class="small text-muted">
-                                {{ $selectedPeriod->start_date }}
+                                {{ \Carbon\Carbon::parse($selectedPeriod->start_date)->format('d M Y') }}
                                 s/d
-                                {{ $selectedPeriod->end_date }}
+                                {{ \Carbon\Carbon::parse($selectedPeriod->end_date)->format('d M Y') }}
                             </div>
                         </div>
                     @endif
@@ -84,12 +84,18 @@
                         <th>NIP</th>
                         <th class="text-end">Gaji Pokok</th>
                         <th class="text-center">Alpa</th>
+                        <th class="text-end">Total Gaji</th>
                         <th class="text-center">Status</th>
                         <th class="text-center" width="120">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
                 @forelse($users as $user)
+                    @php
+                        $payroll = $user->payrolls->first(); // payroll untuk periode ini
+                        $totalSalary = $payroll ? $payroll->net_salary : 0;
+                        $alpaCount = $user->attendances->where('status', 'alpa')->count();
+                    @endphp
                     <tr>
                         <td>
                             <div class="fw-semibold">{{ $user->name }}</div>
@@ -102,17 +108,20 @@
                             Rp {{ number_format($user->employee->gaji_pokok ?? 0) }}
                         </td>
                         <td class="text-center">
-                            {{ $user->alpa_count }}
+                            {{ $alpaCount }}
+                        </td>
+                        <td class="text-end fw-semibold">
+                            Rp {{ number_format($totalSalary) }}
                         </td>
                         <td class="text-center">
-                            @if($user->payroll_exists)
+                            @if($payroll)
                                 <span class="badge bg-success">Sudah</span>
                             @else
                                 <span class="badge bg-warning text-dark">Belum</span>
                             @endif
                         </td>
                         <td class="text-center">
-                            @if(!$user->payroll_exists)
+                            @if(!$payroll)
                                 <form method="POST"
                                       action="{{ route('admin.payroll.generate.single', [$user, $selectedPeriod]) }}">
                                     @csrf
@@ -127,7 +136,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="text-center py-4 text-muted">
+                        <td colspan="7" class="text-center py-4 text-muted">
                             Tidak ada data pegawai.
                         </td>
                     </tr>

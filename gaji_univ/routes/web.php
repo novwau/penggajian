@@ -5,12 +5,13 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\User\AttendanceController as UserAttendanceController;
 use App\Http\Controllers\User\SlipGajiController;
-
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\AttendanceVerificationController;
 use App\Http\Controllers\Admin\PayrollController;
 use App\Http\Controllers\Admin\AuditLogController;
+use App\Http\Controllers\Admin\UserPayrollComponentController;
+use App\Http\Controllers\Admin\PayrollComponentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -199,6 +200,9 @@ Route::middleware(['auth', 'role:admin'])
         Route::get('/periods', [PayrollController::class, 'periods'])->name('periods');
         Route::get('/periods/create', [PayrollController::class, 'createPeriod'])->name('periods.create');
         Route::post('/periods', [PayrollController::class, 'storePeriod'])->name('periods.store');
+        Route::get('/user-components', [UserPayrollComponentController::class, 'index'])->name('user-components.index');
+        Route::get('/user-components/{user}/edit', [UserPayrollComponentController::class, 'edit'])->name('user-components.edit');
+        Route::put('/user-components/{user}', [UserPayrollComponentController::class, 'update'])->name('user-components.update');
 
         // Payroll list
         Route::get('/', [PayrollController::class, 'index'])->name('index');
@@ -217,6 +221,17 @@ Route::middleware(['auth', 'role:admin'])
         Route::get('/reports/{period}',
             [PayrollController::class, 'reportDetail']
         )->name('reports.detail');
+
+        // Payroll Components
+Route::prefix('components')->name('components.')->group(function () {
+    Route::get('/', [PayrollComponentController::class, 'index'])->name('index');         // List semua komponen
+    Route::get('/create', [PayrollComponentController::class, 'create'])->name('create'); // Form tambah komponen baru
+    Route::post('/', [PayrollComponentController::class, 'store'])->name('store');        // Simpan komponen baru
+    Route::get('/{component}/edit', [PayrollComponentController::class, 'edit'])->name('edit');   // Form edit
+    Route::put('/{component}', [PayrollComponentController::class, 'update'])->name('update');   // Update komponen
+    Route::delete('/{component}', [PayrollComponentController::class, 'destroy'])->name('destroy'); // Hapus komponen
+});
+
     });
 
     /*

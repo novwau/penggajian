@@ -43,7 +43,7 @@
                         Rp {{ number_format($payroll->user->employee->gaji_pokok ?? 0) }}
                     </td>
                     <td class="text-end">
-                        Rp {{ number_format($payroll->total_gaji) }}
+                        Rp {{ number_format($payroll->net_salary) }}
                     </td>
                     <td>
                         {{ $payroll->created_at?->format('d M Y') ?? '-' }}
