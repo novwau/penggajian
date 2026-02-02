@@ -7,51 +7,45 @@ use App\Models\User;
 use App\Models\Attendance;
 use App\Models\Payroll;
 use App\Models\PayrollPeriod;
-use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
     public function index()
-    {
-        // Total pegawai (role user)
-        $totalEmployees = User::where('role', 'user')->count();
+{
+    $totalEmployees = User::where('role', '!=', 'admin')->count();
 
-        // Presensi hari ini
-        $todayAttendances = Attendance::whereDate('tanggal', today())->count();
+    $todayAttendances = Attendance::whereDate('tanggal', today())->count();
 
-        // Presensi pending
-        $pendingAttendances = Attendance::where('status', 'pending')->count();
+    $pendingAttendances = Attendance::whereNull('verified_at')->count();
 
-        // Periode aktif
-        $activePeriod = PayrollPeriod::where('status', 'active')->first();
+    $activePeriod = PayrollPeriod::where('status', 'active')->first();
 
-        // Total gaji periode aktif
-        $totalPayroll = 0;
-        if ($activePeriod) {
-            $totalPayroll = Payroll::where('payroll_period_id', $activePeriod->id)
-                ->sum('total_income');
-        }
-
-        // Aktivitas terbaru (ambil dari presensi)
-        $recentActivities = Attendance::with('user')
-            ->latest()
-            ->limit(5)
-            ->get();
-
-        // Payroll terbaru
-        $recentPayrolls = Payroll::with(['user', 'period'])
-            ->latest()
-            ->limit(5)
-            ->get();
-
-        return view('admin.dashboard', compact(
-            'totalEmployees',
-            'todayAttendances',
-            'pendingAttendances',
-            'activePeriod',
-            'totalPayroll',
-            'recentActivities',
-            'recentPayrolls'
-        ));
+    $totalPayroll = 0;
+    if ($activePeriod) {
+        $totalPayroll = Payroll::where('payroll_period_id', $activePeriod->id)
+            ->sum('total_income');
     }
+
+    $recentAttendances = Attendance::with('user')
+        ->orderBy('created_at', 'desc')
+        ->limit(5)
+        ->get();
+
+    $recentPayrolls = Payroll::with(['user', 'period'])
+        ->latest()
+        ->limit(5)
+        ->get();
+
+    return view('admin.dashboard', compact(
+        'totalEmployees',
+        'todayAttendances',
+        'pendingAttendances',
+        'activePeriod',
+        'totalPayroll',
+        'recentAttendances',
+        'recentPayrolls'
+    ));
+}
+
 }

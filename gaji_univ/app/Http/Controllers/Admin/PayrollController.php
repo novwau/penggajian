@@ -86,4 +86,47 @@ public function reportDetail(PayrollPeriod $period)
     ));
 }
 
+/**
+ * Daftar Periode Gaji
+ */
+public function periods()
+{
+    $periods = PayrollPeriod::orderBy('start_date', 'desc')->paginate(10);
+
+    return view('admin.payroll.periods.index', compact('periods'));
+}
+
+/**
+ * Form Tambah Periode
+ */
+public function createPeriod()
+{
+    return view('admin.payroll.periods.create');
+}
+
+/**
+ * Simpan Periode Baru
+ */
+public function storePeriod(Request $request)
+{
+    $validated = $request->validate([
+        'nama'       => 'required|string|max:255',
+        'start_date' => 'required|date',
+        'end_date'   => 'required|date|after_or_equal:start_date',
+    ]);
+
+    PayrollPeriod::create([
+        'nama'       => $validated['nama'],
+        'start_date' => $validated['start_date'],
+        'end_date'   => $validated['end_date'],
+        'status'     => 'draft',
+        'is_locked'  => false,
+    ]);
+
+    return redirect()
+        ->route('admin.payroll.periods')
+        ->with('success', 'Periode gaji berhasil dibuat');
+}
+
+
 }
