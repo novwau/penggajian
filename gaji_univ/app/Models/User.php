@@ -60,4 +60,19 @@ class User extends Authenticatable
 {
     return $this->hasMany(Payroll::class);
 }
+
+public function attendances()
+{
+    return $this->hasMany(\App\Models\Attendance::class, 'user_id');
+}
+
+public function payrollComponents()
+{
+    return $this->belongsToMany(
+        PayrollComponent::class,
+        'user_payroll_components', // nama tabel pivot
+        'user_id',                // foreign key di tabel pivot untuk User
+        'component_id'            // foreign key di tabel pivot untuk PayrollComponent
+    )->withPivot('value')->withTimestamps();
+}
 }

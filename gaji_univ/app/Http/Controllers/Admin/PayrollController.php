@@ -30,10 +30,22 @@ class PayrollController extends Controller
 
         $users = User::with([
             'employee',
+            'attendances' => function ($q) use ($selectedPeriod) {
+                $q->whereBetween('tanggal', [$selectedPeriod->start_date, $selectedPeriod->end_date]);
+            },
             'payrolls' => function ($q) use ($selectedPeriod) {
                 $q->where('payroll_period_id', $selectedPeriod->id);
             }
-        ])->where('role', 'user')->get();
+        ])->where('role', 'user')->get()
+        ->map(function ($user) {
+            // Hitung Alpa
+            $user->alpa_count = $user->attendances->where('status', 'alpa')->count();
+
+            // Cek apakah payroll sudah ada
+            $user->payroll_exists = $user->payrolls->isNotEmpty();
+
+            return $user;
+        });
     }
 
     return view('admin.payroll.index', compact(
@@ -42,7 +54,6 @@ class PayrollController extends Controller
         'users'
     ));
 }
-
 
     /**
      * Generate gaji per pegawai

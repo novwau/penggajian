@@ -51,7 +51,7 @@ class EmployeeController extends Controller
         
         try {
             // Generate password default
-            $defaultPassword = 'untag' . substr($validated['nip'], -4); // untag + 4 digit terakhir NIP
+            $defaultPassword = 'unmer' . substr($validated['nip'], -4); // untag + 4 digit terakhir NIP
             
             // Create User Account
             $user = User::create([

@@ -42,7 +42,7 @@
                     Data Akun Login
                 </h3>
                 <p style="font-size: 0.875rem; color: var(--gray-600);">
-                    Password default akan dibuat otomatis: <strong>untag</strong> + <strong>4 digit terakhir NIP</strong>
+                    Password default akan dibuat otomatis: <strong>unmer</strong> + <strong>4 digit terakhir NIP</strong>
                 </p>
             </div>
 
@@ -80,7 +80,7 @@
                     style="width: 100%; padding: 0.75rem; border: 2px solid var(--gray-200); border-radius: 6px; font-size: 0.95rem; transition: border 0.2s;"
                     onfocus="this.style.borderColor='var(--maroon)'"
                     onblur="this.style.borderColor='var(--gray-200)'"
-                    placeholder="contoh@untag.ac.id">
+                    placeholder="contoh@unmer.ac.id">
                 @error('email')
                 <div style="color: #DC2626; font-size: 0.875rem; margin-top: 0.25rem;">{{ $message }}</div>
                 @enderror
@@ -112,7 +112,7 @@
                     onblur="this.style.borderColor='var(--gray-200)'"
                     placeholder="Contoh: 198501012010011001">
                 <div style="font-size: 0.875rem; color: var(--gray-600); margin-top: 0.5rem;">
-                    💡 Password default akan dibuat: <strong>untag</strong> + <strong>4 digit terakhir NIP</strong>
+                    💡 Password default akan dibuat: <strong>unmer</strong> + <strong>4 digit terakhir NIP</strong>
                 </div>
                 @error('nip')
                 <div style="color: #DC2626; font-size: 0.875rem; margin-top: 0.25rem;">{{ $message }}</div>
@@ -190,7 +190,7 @@
             <strong>Catatan:</strong>
             <ul style="margin: 0.5rem 0 0 1rem; padding: 0;">
                 <li>Akun user akan otomatis dibuat dengan role "user"</li>
-                <li>Password default: <strong>untag</strong> + <strong>4 digit terakhir NIP</strong></li>
+                <li>Password default: <strong>unmer</strong> + <strong>4 digit terakhir NIP</strong></li>
                 <li>Pegawai dapat mengubah password setelah login pertama kali</li>
                 <li>Email akan digunakan untuk login dan notifikasi sistem</li>
             </ul>

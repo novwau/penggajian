@@ -164,31 +164,6 @@
             gap: 1rem;
         }
 
-        .notification-btn {
-            position: relative;
-            padding: 0.5rem;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            border-radius: 8px;
-            transition: background 0.2s ease;
-        }
-
-        .notification-btn:hover {
-            background: var(--gray-100);
-        }
-
-        .notification-badge {
-            position: absolute;
-            top: 4px;
-            right: 4px;
-            width: 8px;
-            height: 8px;
-            background: #EF4444;
-            border-radius: 50%;
-            border: 2px solid white;
-        }
-
         .user-menu {
             display: flex;
             align-items: center;
@@ -425,7 +400,7 @@
         <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
-                <h2 class="sidebar-title heading-font">UNMER Krian</h2>
+                <h2 class="sidebar-title heading-font">UNTUBEDES Krian</h2>
                 <p class="sidebar-subtitle">Portal Kepegawaian</p>
             </div>
 
@@ -482,14 +457,6 @@
                 </div>
 
                 <div class="top-nav-right">
-                    <!-- Notification -->
-                    <button class="notification-btn">
-                        <svg style="width: 20px; height: 20px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
-                        </svg>
-                        <!-- <span class="notification-badge"></span> -->
-                    </button>
-
                     <!-- Logout -->
                     <form method="POST" action="{{ route('logout') }}" style="display: inline;">
                         @csrf
